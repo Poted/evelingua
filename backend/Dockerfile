@@ -8,7 +8,6 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies and build the Go app
-# RUN apt-get update && apt-get install -y libc6
 RUN go mod tidy
 RUN go build -o main .
 

@@ -11,9 +11,7 @@ services:
       elasticsearch:
         condition: service_healthy
     environment:
-      # - ELASTICSEARCH_URL=http://elasticsearch:9200
       - ES_HOST=http://elasticsearch:9200
-      # - ES_PASSWORD=hgMK_IgS3CNspXtrb75R
     networks:
       - app-network
 
@@ -23,7 +21,6 @@ services:
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      # - ES_PASSWORD=hgMK_IgS3CNspXtrb75R
       - xpack.security.enabled=false
     ports:
       - "9200:9200"
