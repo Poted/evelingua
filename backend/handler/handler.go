@@ -1,7 +1,7 @@
 package handler
 
 import (
-	db "evelinqua/database"
+	"evelinqua/es"
 	"fmt"
 	"io"
 	"log"
@@ -17,6 +17,16 @@ type Word struct {
 	Translation string `json:"translation"`
 }
 
+var stop, restart = make(chan bool, 1), make(chan bool, 1)
+
+func Stop() {
+	stop <- true
+}
+
+func Restart() {
+	restart <- true
+}
+
 func HttpHandler() {
 
 	app := fiber.New()
@@ -26,12 +36,38 @@ func HttpHandler() {
 	app.Post("/addword", AddWordHandler)
 	app.Get("/getword", GetWordHandler)
 
-	log.Println("Starting server on http://localhost:4000")
+	go func() {
 
-	err := app.Listen(":4000")
-	if err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		log.Println("Starting server on http://localhost:4000")
+
+		err := app.Listen(":4000")
+		if err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	for {
+		select {
+		case <-stop:
+
+			fmt.Println("Stopping server...")
+			if err := app.Shutdown(); err != nil {
+				log.Printf("Error shutting down server: %v", err)
+			}
+			return
+
+		case <-restart:
+
+			fmt.Println("Restarting server...")
+			if err := app.Shutdown(); err != nil {
+				log.Printf("Error shutting down server: %v", err)
+			}
+
+			go HttpHandler()
+			return
+		}
 	}
+
 }
 
 func HelloHandler(c *fiber.Ctx) error {
@@ -65,7 +101,7 @@ func AddWordHandler(c *fiber.Ctx) error {
         "translation": "%s"
     }`, word.Word, word.Language, word.Translation))
 
-	res, err := db.ES.Index("words", req)
+	res, err := es.Client().Index("words", req)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to add word to Elasticsearch")
 	}
@@ -92,9 +128,9 @@ func GetWordHandler(c *fiber.Ctx) error {
         }
     }`, word))
 
-	res, err := db.ES.Search(
-		db.ES.Search.WithIndex("words"),
-		db.ES.Search.WithBody(query),
+	res, err := es.Client().Search(
+		es.Client().Search.WithIndex("words"),
+		es.Client().Search.WithBody(query),
 	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to search for word in Elasticsearch")
@@ -113,4 +149,29 @@ func GetWordHandler(c *fiber.Ctx) error {
 	fmt.Printf("string(body): %v\n", string(body))
 
 	return c.JSON(string(body))
+}
+
+func CreateIndex(indexName string) {
+
+	req := strings.NewReader(`{
+        "mappings": {
+            "properties": {
+                "word": { "type": "text" },
+                "language": { "type": "text" },
+                "translation": { "type": "text" }
+            }
+        }
+    }`)
+
+	res, err := es.Client().Indices.Create(indexName, es.Client().Indices.Create.WithBody(req))
+	if err != nil {
+		log.Fatalf("Error creating index: %s", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		log.Fatalf("Error response from Elasticsearch: %s", res.String())
+	} else {
+		log.Printf("Index %s created successfully", indexName)
+	}
 }
