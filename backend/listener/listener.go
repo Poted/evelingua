@@ -12,6 +12,7 @@ import (
 
 var startTime time.Time
 
+// This function is used to animate dots while the app is starting
 func dots() {
 
 	time.Sleep(100 * time.Millisecond)
@@ -25,19 +26,8 @@ func dots() {
 	}
 }
 
-func Listen() {
-
-	defer func() {
-		if r := recover(); r != nil {
-			Listen()
-		}
-	}()
-
-	startTime = time.Now()
-	reader := bufio.NewReader(os.Stdin)
-	text := "App is running. Type commands to control:\n"
-
-	dots()
+// This function is used to animate text printing
+func animateText(text string) {
 
 	for _, t := range text {
 
@@ -48,6 +38,28 @@ func Listen() {
 		}
 		fmt.Print(string(t))
 	}
+
+	fmt.Print("\n")
+}
+
+// Listener that runs functions using commands passed while the app is running
+func Listen() {
+
+	// Restart after panic
+	defer func() {
+		if r := recover(); r != nil {
+			Listen()
+		}
+	}()
+
+	// Start timer to measure app uptime
+	startTime = time.Now()
+
+	// Read commands from the console
+	reader := bufio.NewReader(os.Stdin)
+
+	dots()
+	animateText("App is running. Type commands to control: ")
 
 	for {
 		time.Sleep(300 * time.Millisecond)
@@ -63,6 +75,7 @@ func Listen() {
 	}
 }
 
+// These are functions that can be run while the app is running by a Listener
 var commands = map[string]func(){
 
 	"status": func() {
