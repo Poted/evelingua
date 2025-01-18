@@ -7,6 +7,7 @@ toolchain go1.23.4
 require github.com/gofiber/fiber/v2 v2.52.6
 
 require (
+	github.com/Poted/getenv v0.0.0-20241230220358-92c4967b015c
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.17.0 // indirect

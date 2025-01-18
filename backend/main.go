@@ -6,6 +6,8 @@ import (
 	"evelinqua/listener"
 	"flag"
 	"fmt"
+
+	"github.com/Poted/getenv"
 )
 
 func main() {
@@ -26,16 +28,22 @@ func main() {
 
 func App(runElasticSearch bool) {
 
+	// This channel is preventing from returning while restarting handler
 	wait := make(chan bool)
-
 	defer close(wait)
 
+	// Load the environment variables
+	getenv.LoadEnv(".env")
+
+	// Start the listener for managing app while running
 	go listener.Listen()
 
+	// Start the Elastic Search connection
 	if runElasticSearch {
 		es.ElasticSearchConnection()
 	}
 
+	// Start the HTTP handler
 	handler.HttpHandler()
 
 	<-wait
