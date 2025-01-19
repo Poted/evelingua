@@ -2,8 +2,8 @@ package main
 
 import (
 	"evelinqua/es"
-	"evelinqua/handler"
-	"evelinqua/listener"
+	"evelinqua/helpers/colors"
+	"evelinqua/internal/handler"
 	"flag"
 	"fmt"
 
@@ -12,6 +12,12 @@ import (
 
 func main() {
 
+	// Load the environment variables
+	err := getenv.LoadEnv(".env")
+	if err != nil {
+		colors.ErrInColors("Error loading environment variables: ", err)
+	}
+
 	runElasticSearch := flag.Bool("es", true, "Run the elasticsearch connection (default: true)")
 	flag.Parse()
 
@@ -19,24 +25,17 @@ func main() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered from panic:", r)
 			App(*runElasticSearch)
+
 		}
 	}()
 
 	App(*runElasticSearch)
-
 }
 
 func App(runElasticSearch bool) {
 
-	// This channel is preventing from returning while restarting handler
-	wait := make(chan bool)
-	defer close(wait)
-
-	// Load the environment variables
-	getenv.LoadEnv(".env")
-
 	// Start the listener for managing app while running
-	go listener.Listen()
+	// go listener.Listen()
 
 	// Start the Elastic Search connection
 	if runElasticSearch {
@@ -44,7 +43,6 @@ func App(runElasticSearch bool) {
 	}
 
 	// Start the HTTP handler
-	handler.HttpHandler()
+	handler.NewServer().Start()
 
-	<-wait
 }

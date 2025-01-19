@@ -3,7 +3,6 @@ package listener
 import (
 	"bufio"
 	"evelinqua/es"
-	"evelinqua/handler"
 	"fmt"
 	"os"
 	"strings"
@@ -83,11 +82,6 @@ var commands = map[string]func(){
 		fmt.Println("Time up: ", time.Since(startTime))
 	},
 
-	"reload": func() {
-		fmt.Println("Reloading listener...")
-		panic("")
-	},
-
 	"exit": func() {
 		os.Exit(0)
 	},
@@ -98,13 +92,5 @@ var commands = map[string]func(){
 
 	"panic": func() {
 		panic("Panic!")
-	},
-
-	"restart-handler": func() {
-		handler.Restart()
-	},
-
-	"stop-handler": func() {
-		handler.Stop()
 	},
 }
