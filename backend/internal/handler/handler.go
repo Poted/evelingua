@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"evelinqua/es"
 	"evelinqua/helpers/colors"
+	"evelinqua/internal/repository"
+	"evelinqua/internal/service"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,7 +21,7 @@ type Server struct {
 
 type routerGroup struct {
 	public fiber.Router
-	admin  fiber.Router
+	auth   fiber.Router
 }
 
 func NewServer() *Server {
@@ -28,10 +32,14 @@ func NewServer() *Server {
 	}
 
 	server.public = server.app.Group("/v1")
-	server.admin = server.public.Group("/admin", JWTMiddleware)
+	server.auth = server.public.Group("/auth", JWTMiddleware)
 
 	server.AddRoutes(
 		NewAuthHandler(),
+		NewWordHandler(
+			service.NewWordService(
+				repository.NewWordRepository(es.Client(), "1"),
+			)),
 	)
 
 	return server
@@ -48,14 +56,14 @@ func (s *Server) Start() {
 
 type RouteConfigurator interface {
 	SetupRoutes(router fiber.Router)
-	SetupAdminRoutes(router fiber.Router)
+	SetupAuthRoutes(router fiber.Router)
 }
 
 func (s *Server) AddRoutes(handler ...RouteConfigurator) {
 
 	for _, rc := range handler {
 		rc.SetupRoutes(s.public)
-		rc.SetupAdminRoutes(s.admin)
+		rc.SetupAuthRoutes(s.auth)
 	}
 
 }
@@ -74,7 +82,7 @@ func GenerateJWT(userID string, isAdmin bool) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signedToken, err := token.SignedString(os.Getenv("JWT_SECRET"))
+	signedToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", err
 	}
@@ -91,15 +99,24 @@ func JWTMiddleware(c *fiber.Ctx) error {
 		})
 	}
 
+	parts := strings.Split(tokenString, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Invalid authorization format",
+		})
+	}
+	tokenString = parts[1]
+
 	// Parse and validate the token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fiber.ErrUnauthorized
 		}
-		return os.Getenv("JWT_SECRET"), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
 	if err != nil || !token.Valid {
+		colors.ErrInColors("invalid token", err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid or expired token",
 		})

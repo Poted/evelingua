@@ -4,6 +4,7 @@ import (
 	"evelinqua/es"
 	"evelinqua/helpers/colors"
 	"evelinqua/internal/handler"
+	"evelinqua/listener"
 	"flag"
 	"fmt"
 
@@ -19,23 +20,26 @@ func main() {
 	}
 
 	runElasticSearch := flag.Bool("es", true, "Run the elasticsearch connection (default: true)")
+	listen := flag.Bool("l", false, "Run the listener (default: false)")
 	flag.Parse()
 
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered from panic:", r)
-			App(*runElasticSearch)
+			App(*runElasticSearch, *listen)
 
 		}
 	}()
 
-	App(*runElasticSearch)
+	App(*runElasticSearch, *listen)
 }
 
-func App(runElasticSearch bool) {
+func App(runElasticSearch, listen bool) {
 
 	// Start the listener for managing app while running
-	// go listener.Listen()
+	if listen {
+		go listener.Listen()
+	}
 
 	// Start the Elastic Search connection
 	if runElasticSearch {

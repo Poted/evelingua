@@ -26,6 +26,7 @@ func ElasticSearchHandler(app *fiber.App) {
 }
 
 func CheckConnectionHandler(c *fiber.Ctx) error {
+
 	resp, err := http.Get("http://localhost:9200/")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Failed to connect to Elasticsearch")
@@ -66,6 +67,7 @@ func AddWordHandler(c *fiber.Ctx) error {
 }
 
 func GetWordHandler(c *fiber.Ctx) error {
+
 	word := c.Query("word")
 	if word == "" {
 		return c.Status(fiber.StatusBadRequest).SendString("Missing word parameter")

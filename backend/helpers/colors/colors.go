@@ -3,6 +3,7 @@ package colors
 import (
 	"fmt"
 	"log"
+	"runtime"
 )
 
 var Reset Colors = "\033[0m"
@@ -30,13 +31,17 @@ func LogInColors(color Colors, msg string) {
 }
 
 func ErrInColors(msg string, err ...error) {
+
+	_, filename, line, _ := runtime.Caller(1)
+
 	fmt.Print(Red)
+	log.Default().Print(filename, ":", line)
+	fmt.Print(Reset)
 
 	if len(err) > 0 {
-		log.Default().Print(msg, err)
+		fmt.Printf("%s %v\n", msg, err)
 	} else {
-		log.Default().Print(msg)
+		fmt.Printf("%s\n", msg)
 	}
 
-	fmt.Print(Reset)
 }
