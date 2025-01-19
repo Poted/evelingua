@@ -36,7 +36,7 @@ func NewServer() *Server {
 
 	server.AddRoutes(
 		NewAuthHandler(),
-		NewWordHandler(
+		NewWordHandler("/word",
 			service.NewWordService(
 				repository.NewWordRepository(es.Client(), "1"),
 			)),

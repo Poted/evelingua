@@ -11,23 +11,23 @@ import (
 // region setup
 
 type wordHandler struct {
-	Prefix  string
+	prefix  string
 	service *service.WordService
 }
 
-func NewWordHandler(service *service.WordService) *wordHandler {
+func NewWordHandler(prefix string, service *service.WordService) *wordHandler {
 	return &wordHandler{
-		Prefix: "/word",
+		prefix: prefix,
 	}
 }
 
 func (h *wordHandler) SetupRoutes(router fiber.Router) {
-	wg := router.Group(h.Prefix)
+	wg := router.Group(h.prefix)
 	wg.Get("/add", h.AddWord)
 }
 
 func (h *wordHandler) SetupAuthRoutes(router fiber.Router) {
-	wg := router.Group(h.Prefix)
+	wg := router.Group(h.prefix)
 	wg.Get("/word", HelloHandler)
 }
 
