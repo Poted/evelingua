@@ -16,8 +16,8 @@ type Server struct {
 }
 
 type routerGroup struct {
-	Public fiber.Router
-	Admin  fiber.Router
+	public fiber.Router
+	admin  fiber.Router
 }
 
 func NewServer() *Server {
@@ -27,8 +27,8 @@ func NewServer() *Server {
 		Version: "1.0.0",
 	}
 
-	server.Public = server.app.Group("/v1")
-	server.Admin = server.Public.Group("/admin", JWTMiddleware)
+	server.public = server.app.Group("/v1")
+	server.admin = server.public.Group("/admin", JWTMiddleware)
 
 	server.AddRoutes(
 		NewAuthHandler(),
@@ -54,8 +54,8 @@ type RouteConfigurator interface {
 func (s *Server) AddRoutes(handler ...RouteConfigurator) {
 
 	for _, rc := range handler {
-		rc.SetupRoutes(s.Public)
-		rc.SetupAdminRoutes(s.Admin)
+		rc.SetupRoutes(s.public)
+		rc.SetupAdminRoutes(s.admin)
 	}
 
 }
