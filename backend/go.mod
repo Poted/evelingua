@@ -4,13 +4,16 @@ go 1.22
 
 toolchain go1.23.4
 
-require github.com/gofiber/fiber/v2 v2.52.6
+require (
+	github.com/gofiber/fiber/v2 v2.52.6
+	github.com/golang-jwt/jwt/v5 v5.2.1
+)
 
 require (
 	github.com/Poted/getenv v0.0.0-20241230220358-92c4967b015c
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect
-	github.com/elastic/go-elasticsearch/v8 v8.17.0 // indirect
+	github.com/elastic/go-elasticsearch/v8 v8.17.0
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
