@@ -29,8 +29,14 @@ func LogInColors(color Colors, msg string) {
 	fmt.Print(Reset)
 }
 
-func ErrInColors(err string) {
+func ErrInColors(msg string, err ...error) {
 	fmt.Print(Red)
-	log.Default().Print(err)
+
+	if len(err) > 0 {
+		log.Default().Print(msg, err)
+	} else {
+		log.Default().Print(msg)
+	}
+
 	fmt.Print(Reset)
 }
