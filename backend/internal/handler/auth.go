@@ -2,16 +2,23 @@ package handler
 
 import (
 	"evelinqua/helpers/colors"
+	"evelinqua/internal/service"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 // region setup
 
-type authHandler struct{}
+type authHandler struct {
+	prefix  string
+	service *service.AuthService
+}
 
-func NewAuthHandler() *authHandler {
-	return &authHandler{}
+func NewAuthHandler(prefix string, service *service.AuthService) *authHandler {
+	return &authHandler{
+		prefix:  prefix,
+		service: service,
+	}
 }
 
 func (h *authHandler) SetupRoutes(router fiber.Router) {

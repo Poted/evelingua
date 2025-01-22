@@ -32,13 +32,17 @@ func NewServer() *Server {
 	}
 
 	server.public = server.app.Group("/v1")
-	server.auth = server.public.Group("/auth", JWTMiddleware)
+	server.auth = server.public.Group("/a", JWTMiddleware)
 
 	server.AddRoutes(
-		NewAuthHandler(),
+
+		NewAuthHandler("/auth",
+			service.NewAuthService(
+				repository.NewAuthRepository(es.Client(), "auth"))),
+
 		NewWordHandler("/word",
 			service.NewWordService(
-				repository.NewWordRepository(es.Client(), "1"),
+				repository.NewWordRepository(es.Client(), "word"),
 			)),
 	)
 

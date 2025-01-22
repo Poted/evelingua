@@ -36,16 +36,16 @@ func (h *wordHandler) SetupAuthRoutes(router fiber.Router) {
 
 func (h *wordHandler) AddWord(c *fiber.Ctx) error {
 
-	fmt.Printf("\"D::DD\": %v\n", "D::DD")
-
 	var word repository.Word
 	if err := c.BodyParser(&word); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
 	}
 
-	if err := h.service.AddWord(word); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to add word"})
-	}
+	// if err := h.service.AddWord(word); err != nil {
+	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to add word"})
+	// }
+
+	fmt.Printf("word: %v\n", word)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Word added successfully"})
 }
